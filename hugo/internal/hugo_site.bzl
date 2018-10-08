@@ -83,6 +83,9 @@ def _hugo_site_impl(ctx):
         command = " && ".join([hugo_command, zip_command]),
         inputs = hugo_inputs,
         outputs = hugo_outputs,
+        execution_requirements = {
+            "no-sandbox": "1",
+        },
     )
 
     # Return files and 'hugo_site' provider
