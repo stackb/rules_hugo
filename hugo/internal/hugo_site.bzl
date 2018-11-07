@@ -18,7 +18,7 @@ def _hugo_site_impl(ctx):
     hugo_inputs = [hugo]
     hugo_outputs = [zip_file]
     hugo_args = []
-    
+
     # Copy the config file into place
     config_file = ctx.actions.declare_file(ctx.file.config.basename)
     ctx.actions.run_shell(
@@ -27,7 +27,7 @@ def _hugo_site_impl(ctx):
         command = "cp %s %s" % (ctx.file.config.path, config_file.path),
     )
     hugo_inputs.append(config_file)
-    
+
     # Copy all the files over
     content_files = copy_to_dir(ctx, ctx.files.content, "content")
     static_files = copy_to_dir(ctx, ctx.files.static, "static")
@@ -58,6 +58,7 @@ def _hugo_site_impl(ctx):
         "--config", config_file.path,
         "--contentDir", "/".join([config_file.dirname, "content"]),
         "--themesDir", "/".join([config_file.dirname, "themes"]),
+        "--layoutDir", "/".join([config_file.dirname, "layouts"]),
         "--destination", "/".join([config_file.dirname, ctx.label.name]),
     ]
 
@@ -157,4 +158,4 @@ hugo_site = rule(
         "zip_file": "%{name}_site.zip",
     }
 )
-    
+
