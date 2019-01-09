@@ -45,6 +45,8 @@ load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_repositories", "github_hug
 #
 # Load hugo binary itself
 #
+# Optionally, load a specific version of Hugo, with the 'hugo_version' argument, e.g.:
+# hugo_repositories(hugo_version = "0.53")
 hugo_repositories()
 
 #
