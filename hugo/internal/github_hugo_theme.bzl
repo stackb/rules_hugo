@@ -1,3 +1,5 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 DEFAULT_BUILD_FILE = """
 filegroup(
     name = "files",
@@ -17,13 +19,13 @@ def github_hugo_theme(name, owner, repo, commit, **kwargs):
         commit = commit,
     )
     if "build_file" in kwargs or "build_file_content" in kwargs:
-        native.new_http_archive(name = name,
-                                url = url,
-                                strip_prefix = strip_prefix,
-                                **kwargs)
+        http_archive(name = name,
+                     url = url,
+                     strip_prefix = strip_prefix,
+                     **kwargs)
     else:
-        native.new_http_archive(name = name,
-                                url = url,
-                                strip_prefix = strip_prefix,
-                                build_file_content = DEFAULT_BUILD_FILE,
-                                **kwargs)
+        http_archive(name = name,
+                     url = url,
+                     strip_prefix = strip_prefix,
+                     build_file_content = DEFAULT_BUILD_FILE,
+                     **kwargs)
