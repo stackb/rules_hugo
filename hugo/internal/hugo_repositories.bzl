@@ -1,3 +1,5 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 HUGO_BUILD_FILE = """    
 package(default_visibility = ["//visibility:public"])
 exports_files( ["hugo"] )
@@ -12,11 +14,11 @@ def hugo_repositories(hugo_version = "0.31.1",
         os_arch = hugo_os_arch,
     )
 
-    native.new_http_archive(
+    http_archive(
         name = "hugo",
         url = hugo_url,
         build_file_content = HUGO_BUILD_FILE,
-        sha_256 = hugo_sha256,
+        sha256 = hugo_sha256,
     )
 
     
