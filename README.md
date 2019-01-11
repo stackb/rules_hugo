@@ -61,7 +61,7 @@ github_hugo_theme(
 )
 ```
 
-### Declare a hugo_site
+### Declare a hugo_site in your BUILD file
 
 ```python
 load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_site", "hugo_theme")
@@ -77,8 +77,10 @@ hugo_theme(
 )
 
 # Declare a site. Config file is required.
+my_site_name = "basic"
+
 hugo_site(
-    name = "basic",
+    name = my_site_name,
     config = "config.toml",
     content = [
         "_index.md",
@@ -88,17 +90,40 @@ hugo_site(
     theme = ":xmin",
 )
 
+# Tar it up
+pkg_tar(
+    name = "%s_tar" % my_site_name,
+    srcs = [":%s" % my_site_name],
+)
 ```
 
 ### Build the site
 
-Build the `hugo_site` target emits a `%{name}_site.zip` file
-containing all the files in the site.
+The `hugo_site` target emits the output in the `bazel-bin` directory.
 
 ```sh
 $ bazel build :basic
+[...]
 Target //:basic up-to-date:
-  bazel-bin/basic_site.zip
+  bazel-bin/basic
+[...]
+```
+```sh
+$ tree bazel-bin/basic
+bazel-bin/basic
+├── 404.html
+├── about
+│   └── index.html
+[...]
+```
+
+The `pkg_tar` target emits a `%{name}_tar.tar` file containing all the Hugo output files.
+
+```sh
+$ bazel build :basic_tar
+[...]
+Target //:basic up-to-date:
+  bazel-bin/basic_tar.tar
 ```
 
 ## End

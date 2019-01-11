@@ -1,4 +1,3 @@
-
 def copy_to_dir(ctx, srcs, dirname):
     outs = []
     for i in srcs:
@@ -12,12 +11,9 @@ def copy_to_dir(ctx, srcs, dirname):
         outs.append(o)
     return outs
 
-
 def _hugo_site_impl(ctx):
-    zip_file = ctx.outputs.zip_file
     hugo = ctx.executable.hugo
     hugo_inputs = [hugo]
-    hugo_outputs = [zip_file]
     hugo_args = []
 
     # Copy the config file into place
@@ -57,12 +53,13 @@ def _hugo_site_impl(ctx):
             hugo_inputs.append(o)
 
     # Prepare hugo command
+    hugo_outputdir = ctx.actions.declare_directory(ctx.label.name)
     hugo_args += [
         "--config", config_file.path,
         "--contentDir", "/".join([config_file.dirname, "content"]),
         "--themesDir", "/".join([config_file.dirname, "themes"]),
         "--layoutDir", "/".join([config_file.dirname, "layouts"]),
-        "--destination", "/".join([config_file.dirname, ctx.label.name]),
+        "--destination", hugo_outputdir.path,
     ]
 
     if ctx.attr.quiet:
@@ -71,40 +68,17 @@ def _hugo_site_impl(ctx):
         hugo_args.append("--verbose")
     if ctx.attr.base_url:
         hugo_args.append("--baseURL", ctx.attr.base_url)
-    hugo_command = " ".join([hugo.path] + hugo_args)
 
-    # Prepare zip command
-    zip_args = ["zip", "-r", ctx.outputs.zip_file.path]
-    if ctx.attr.quiet:
-        zip_args.insert(1, "--quiet")
-    zip_args.append(zip_file.dirname + "/" + ctx.label.name)
-    zip_command = " ".join(zip_args)
-
-    # Generate site and zip up the publishDir
-    ctx.actions.run_shell(
+    ctx.actions.run(
         mnemonic = "GoHugo",
         progress_message = "Generating hugo site",
-        command = " && ".join([hugo_command, zip_command]),
+        executable = hugo,
+        arguments = hugo_args,
         inputs = hugo_inputs,
-        outputs = hugo_outputs,
-        execution_requirements = {
-            "no-sandbox": "1",
-        },
+        outputs = [hugo_outputdir],
     )
 
-    # Return files and 'hugo_site' provider
-    return struct(
-        files = depset(hugo_outputs),
-        hugo_site = struct(
-            name = ctx.label.name,
-            content = content_files,
-            static = static_files,
-            data = data_files,
-            config = config_file,
-            theme = ctx.attr.theme,
-            archive = zip_file,
-        ),
-    )
+    return [DefaultInfo(files = depset([hugo_outputdir]))]
 
 hugo_site = rule(
     implementation = _hugo_site_impl,
@@ -157,8 +131,4 @@ hugo_site = rule(
             default = False,
         ),
     },
-    outputs = {
-        "zip_file": "%{name}_site.zip",
-    }
 )
-
