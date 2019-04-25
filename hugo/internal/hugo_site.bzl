@@ -85,7 +85,7 @@ hugo_site = rule(
     attrs = {
         # Hugo config file
         "config": attr.label(
-            allow_files = FileType([".toml", ".yaml", ".json"]),
+            allow_files = [".toml", ".yaml", ".json"],
             single_file = True,
             mandatory = True,
         ),
