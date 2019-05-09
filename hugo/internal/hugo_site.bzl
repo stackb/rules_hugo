@@ -8,12 +8,13 @@ def relative_path(src, dirname):
     Returns:
        "content/docs/example1.md"
     """
+
     # Find the last path segment that matches the given dirname, and return that
     # substring.
-    i = src.short_path.rfind('/%s/' % dirname)
+    i = src.short_path.rfind("/%s/" % dirname)
     if i == -1:
         fail("failed to get relative path: couldn't find %s in %s" % (dirname, src.short_path))
-    return src.short_path[i+1:]
+    return src.short_path[i + 1:]
 
 def copy_to_dir(ctx, srcs, dirname):
     outs = []
@@ -23,7 +24,7 @@ def copy_to_dir(ctx, srcs, dirname):
             inputs = [i],
             outputs = [o],
             command = 'cp "$1" "$2"',
-            arguments = [i.path, o.path]
+            arguments = [i.path, o.path],
         )
         outs.append(o)
     return outs
@@ -41,7 +42,7 @@ def _hugo_site_impl(ctx):
         inputs = [ctx.file.config],
         outputs = [config_file],
         command = 'cp "$1" "$2"',
-        arguments = [ctx.file.config.path, config_file.path]
+        arguments = [ctx.file.config.path, config_file.path],
     )
     hugo_inputs.append(config_file)
 
@@ -74,8 +75,10 @@ def _hugo_site_impl(ctx):
 
     # Prepare hugo command
     hugo_args += [
-        "--source", config_file.dirname,
-        "--destination", ctx.label.name,
+        "--source",
+        config_file.dirname,
+        "--destination",
+        ctx.label.name,
     ]
 
     if ctx.attr.quiet:
@@ -97,11 +100,15 @@ def _hugo_site_impl(ctx):
     return [DefaultInfo(files = depset([hugo_outputdir]))]
 
 hugo_site = rule(
-    implementation = _hugo_site_impl,
     attrs = {
         # Hugo config file
         "config": attr.label(
-            allow_files = [".toml", ".yaml", ".json"],
+            allow_files = [
+                ".toml",
+                ".yaml",
+                ".yml",
+                ".json",
+            ],
             single_file = True,
             mandatory = True,
         ),
@@ -151,4 +158,5 @@ hugo_site = rule(
             default = False,
         ),
     },
+    implementation = _hugo_site_impl,
 )

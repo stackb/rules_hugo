@@ -12,7 +12,6 @@ hugo_theme(
     srcs = [
         "@com_github_vjeantet_hugo_theme_docdock//:files",
     ],
-    
 )
 
 hugo_site(

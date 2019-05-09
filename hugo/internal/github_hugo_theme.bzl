@@ -19,13 +19,17 @@ def github_hugo_theme(name, owner, repo, commit, **kwargs):
         commit = commit,
     )
     if "build_file" in kwargs or "build_file_content" in kwargs:
-        http_archive(name = name,
-                     url = url,
-                     strip_prefix = strip_prefix,
-                     **kwargs)
+        http_archive(
+            name = name,
+            url = url,
+            strip_prefix = strip_prefix,
+            **kwargs
+        )
     else:
-        http_archive(name = name,
-                     url = url,
-                     strip_prefix = strip_prefix,
-                     build_file_content = DEFAULT_BUILD_FILE,
-                     **kwargs)
+        http_archive(
+            name = name,
+            url = url,
+            strip_prefix = strip_prefix,
+            build_file_content = DEFAULT_BUILD_FILE,
+            **kwargs
+        )

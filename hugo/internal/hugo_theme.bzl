@@ -1,4 +1,3 @@
-
 def _hugo_theme_impl(ctx):
     return struct(
         hugo_theme = struct(
@@ -8,14 +7,13 @@ def _hugo_theme_impl(ctx):
     )
 
 hugo_theme = rule(
-    implementation = _hugo_theme_impl,
     attrs = {
         "theme_name": attr.string(
         ),
         "srcs": attr.label_list(
             mandatory = True,
             allow_files = True,
-        )
+        ),
     },
+    implementation = _hugo_theme_impl,
 )
-    
