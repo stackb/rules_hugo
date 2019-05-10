@@ -1,12 +1,30 @@
+def relative_path(src, dirname):
+    """Given a src File and a directory it's under, return the relative path.
+
+    For example,
+    Input:
+       src: File(path/to/site/content/docs/example1.md)
+       dirname: string("content")
+    Returns:
+       "content/docs/example1.md"
+    """
+
+    # Find the last path segment that matches the given dirname, and return that
+    # substring.
+    i = src.short_path.rfind("/%s/" % dirname)
+    if i == -1:
+        fail("failed to get relative path: couldn't find %s in %s" % (dirname, src.short_path))
+    return src.short_path[i + 1:]
+
 def copy_to_dir(ctx, srcs, dirname):
     outs = []
     for i in srcs:
-        o = ctx.actions.declare_file(dirname + "/" + i.basename)
+        o = ctx.actions.declare_file(relative_path(i, dirname))
         ctx.action(
             inputs = [i],
             outputs = [o],
             command = 'cp "$1" "$2"',
-            arguments = [i.path, o.path]
+            arguments = [i.path, o.path],
         )
         outs.append(o)
     return outs
@@ -14,6 +32,8 @@ def copy_to_dir(ctx, srcs, dirname):
 def _hugo_site_impl(ctx):
     hugo = ctx.executable.hugo
     hugo_inputs = [hugo]
+    hugo_outputdir = ctx.actions.declare_directory(ctx.label.name)
+    hugo_outputs = [hugo_outputdir]
     hugo_args = []
 
     # Copy the config file into place
@@ -22,7 +42,7 @@ def _hugo_site_impl(ctx):
         inputs = [ctx.file.config],
         outputs = [config_file],
         command = 'cp "$1" "$2"',
-        arguments = [ctx.file.config.path, config_file.path]
+        arguments = [ctx.file.config.path, config_file.path],
     )
     hugo_inputs.append(config_file)
 
@@ -32,7 +52,8 @@ def _hugo_site_impl(ctx):
     image_files = copy_to_dir(ctx, ctx.files.images, "images")
     layout_files = copy_to_dir(ctx, ctx.files.layouts, "layouts")
     data_files = copy_to_dir(ctx, ctx.files.data, "data")
-    hugo_inputs += content_files + static_files + image_files + layout_files + data_files
+    asset_files = copy_to_dir(ctx, ctx.files.assets, "assets")
+    hugo_inputs += content_files + static_files + image_files + layout_files + asset_files + data_files
 
     # Copy the theme
     if ctx.attr.theme:
@@ -53,13 +74,11 @@ def _hugo_site_impl(ctx):
             hugo_inputs.append(o)
 
     # Prepare hugo command
-    hugo_outputdir = ctx.actions.declare_directory(ctx.label.name)
     hugo_args += [
-        "--config", config_file.path,
-        "--contentDir", "/".join([config_file.dirname, "content"]),
-        "--themesDir", "/".join([config_file.dirname, "themes"]),
-        "--layoutDir", "/".join([config_file.dirname, "layouts"]),
-        "--destination", hugo_outputdir.path,
+        "--source",
+        config_file.dirname,
+        "--destination",
+        ctx.label.name,
     ]
 
     if ctx.attr.quiet:
@@ -75,17 +94,21 @@ def _hugo_site_impl(ctx):
         executable = hugo,
         arguments = hugo_args,
         inputs = hugo_inputs,
-        outputs = [hugo_outputdir],
+        outputs = hugo_outputs,
     )
 
     return [DefaultInfo(files = depset([hugo_outputdir]))]
 
 hugo_site = rule(
-    implementation = _hugo_site_impl,
     attrs = {
         # Hugo config file
         "config": attr.label(
-            allow_files = [".toml", ".yaml", ".json"],
+            allow_files = [
+                ".toml",
+                ".yaml",
+                ".yml",
+                ".json",
+            ],
             single_file = True,
             mandatory = True,
         ),
@@ -104,6 +127,10 @@ hugo_site = rule(
         ),
         # Files to be included in the layouts/ subdir
         "layouts": attr.label_list(
+            allow_files = True,
+        ),
+        # Files to be included in the assets/ subdir
+        "assets": attr.label_list(
             allow_files = True,
         ),
         # Files to be included in the data/ subdir
@@ -131,4 +158,5 @@ hugo_site = rule(
             default = False,
         ),
     },
+    implementation = _hugo_site_impl,
 )

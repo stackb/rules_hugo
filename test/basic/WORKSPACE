@@ -3,21 +3,22 @@ local_repository(
     path = "../..",
 )
 
-load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_repositories", "github_hugo_theme")
+load("@build_stack_rules_hugo//hugo:rules.bzl", "github_hugo_theme", "hugo_repository")
 
-hugo_repositories()
+hugo_repository(
+    name = "hugo",
+)
 
 github_hugo_theme(
     name = "com_github_yihui_hugo_xmin",
+    commit = "c14ca049d0dd60386264ea68c91d8495809cc4c6",
     owner = "yihui",
     repo = "hugo-xmin",
-    commit = "c14ca049d0dd60386264ea68c91d8495809cc4c6",
 )
 
 github_hugo_theme(
     name = "com_github_vjeantet_hugo_theme_docdock",
+    commit = "43976958a6636f51ff36978024b1e25914d72c96",  # ~Dec 25 2017
     owner = "vjeantet",
     repo = "hugo-theme-docdock",
-    commit = "43976958a6636f51ff36978024b1e25914d72c96", # ~Dec 25 2017 
 )
-

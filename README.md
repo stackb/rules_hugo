@@ -14,7 +14,7 @@
 
 |               Name   |  Description |
 | -------------------: | :----------- |
-| [hugo_repositories](#hugo_repositories) | Load dependencies for this repo. |
+| [hugo_repository](#hugo_repository) | Load hugo dependency for this repo. |
 | [github_hugo_theme](#github_hugo_theme) | Load a hugo theme from github. |
 
 ## Build Rules
@@ -40,14 +40,15 @@ http_archive(
     strip_prefix = "rules_hugo-%s" % RULES_HUGO_COMMIT
 )
 
-load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_repositories", "github_hugo_theme")
+load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_repository", "github_hugo_theme")
 
 #
 # Load hugo binary itself
 #
-# Optionally, load a specific version of Hugo, with the 'hugo_version' argument, e.g.:
-# hugo_repositories(hugo_version = "0.53")
-hugo_repositories()
+# Optionally, load a specific version of Hugo, with the 'version' argument
+hugo_repository(
+    name = "hugo",
+)
 
 #
 # This makes a filegroup target "@com_github_yihui_hugo_xmin//:files"
