@@ -109,7 +109,7 @@ hugo_site = rule(
                 ".yml",
                 ".json",
             ],
-            single_file = True,
+            allow_single_file = True,
             mandatory = True,
         ),
         # Files to be included in the content/ subdir
