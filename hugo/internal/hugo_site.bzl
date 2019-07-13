@@ -103,13 +103,12 @@ hugo_site = rule(
     attrs = {
         # Hugo config file
         "config": attr.label(
-            allow_files = [
+            allow_single_file = [
                 ".toml",
                 ".yaml",
                 ".yml",
                 ".json",
             ],
-            allow_single_file = True,
             mandatory = True,
         ),
         # Files to be included in the content/ subdir
