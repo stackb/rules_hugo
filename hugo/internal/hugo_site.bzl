@@ -31,7 +31,7 @@ def copy_to_dir(ctx, srcs, dirname):
 
 def _hugo_site_impl(ctx):
     hugo = ctx.executable.hugo
-    hugo_inputs = [hugo]
+    hugo_inputs = []
     hugo_outputdir = ctx.actions.declare_directory(ctx.label.name)
     hugo_outputs = [hugo_outputdir]
     hugo_args = []
@@ -95,6 +95,7 @@ def _hugo_site_impl(ctx):
         arguments = hugo_args,
         inputs = hugo_inputs,
         outputs = hugo_outputs,
+        tools = [hugo],
     )
 
     return [DefaultInfo(files = depset([hugo_outputdir]))]
