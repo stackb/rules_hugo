@@ -20,7 +20,7 @@ def copy_to_dir(ctx, srcs, dirname):
     outs = []
     for i in srcs:
         o = ctx.actions.declare_file(relative_path(i, dirname))
-        ctx.action(
+        ctx.actions.run_shell(
             inputs = [i],
             outputs = [o],
             command = 'cp "$1" "$2"',
@@ -38,7 +38,7 @@ def _hugo_site_impl(ctx):
 
     # Copy the config file into place
     config_file = ctx.actions.declare_file(ctx.file.config.basename)
-    ctx.action(
+    ctx.actions.run_shell(
         inputs = [ctx.file.config],
         outputs = [config_file],
         command = 'cp "$1" "$2"',
@@ -65,7 +65,7 @@ def _hugo_site_impl(ctx):
             else:
                 o_filename = "/".join(["themes", theme.name, i.short_path])
             o = ctx.actions.declare_file(o_filename)
-            ctx.action(
+            ctx.actions.run_shell(
                 inputs = [i],
                 outputs = [o],
                 command = 'cp "$1" "$2"',
