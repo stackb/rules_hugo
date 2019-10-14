@@ -2,6 +2,7 @@ def _hugo_theme_impl(ctx):
     return struct(
         hugo_theme = struct(
             name = ctx.attr.theme_name or ctx.label.name,
+            path = ctx.label.package,
             files = depset(ctx.files.srcs),
         ),
     )

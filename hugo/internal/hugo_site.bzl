@@ -63,7 +63,7 @@ def _hugo_site_impl(ctx):
             if i.short_path.startswith("../"):
                 o_filename = "/".join(["themes", theme.name] + i.short_path.split("/")[2:])
             else:
-                o_filename = "/".join(["themes", theme.name, i.short_path])
+                o_filename = "/".join(["themes", theme.name, i.short_path[len(theme.path):]])
             o = ctx.actions.declare_file(o_filename)
             ctx.action(
                 inputs = [i],
