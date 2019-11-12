@@ -59,7 +59,7 @@ def _hugo_site_impl(ctx):
     if ctx.attr.theme:
         theme = ctx.attr.theme.hugo_theme
         hugo_args += ["--theme", theme.name]
-        for i in theme.files:
+        for i in theme.files.to_list():
             if i.short_path.startswith("../"):
                 o_filename = "/".join(["themes", theme.name] + i.short_path.split("/")[2:])
             else:
