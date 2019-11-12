@@ -86,7 +86,7 @@ def _hugo_site_impl(ctx):
     if ctx.attr.verbose:
         hugo_args.append("--verbose")
     if ctx.attr.base_url:
-        hugo_args.append("--baseURL", ctx.attr.base_url)
+        hugo_args += ["--baseURL", ctx.attr.base_url]
 
     ctx.actions.run(
         mnemonic = "GoHugo",
