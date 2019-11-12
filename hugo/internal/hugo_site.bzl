@@ -1,12 +1,12 @@
 def relative_path(src, dirname):
     """Given a src File and a directory it's under, return the relative path.
 
-    For example,
-    Input:
-       src: File(path/to/site/content/docs/example1.md)
-       dirname: string("content")
+    Args:
+        src: File(path/to/site/content/docs/example1.md)
+        dirname: string("content")
+
     Returns:
-       "content/docs/example1.md"
+        string
     """
 
     # Find the last path segment that matches the given dirname, and return that
@@ -98,7 +98,13 @@ def _hugo_site_impl(ctx):
         tools = [hugo],
     )
 
-    return [DefaultInfo(files = depset([hugo_outputdir]))]
+    files = depset([hugo_outputdir])
+    runfiles = ctx.runfiles(files = [hugo_outputdir])
+
+    return [DefaultInfo(
+        files = files,
+        runfiles = runfiles,
+    )]
 
 hugo_site = rule(
     attrs = {
