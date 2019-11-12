@@ -1,5 +1,8 @@
 # `rules_hugo`
 
+[![Build Status](https://api.cirrus-ci.com/github/stackb/rules_hugo.svg)](https://cirrus-ci.com/github/stackb/rules_hugo)
+
+
 <table><tr>
 <td><img src="https://bazel.build/images/bazel-icon.svg" height="120"/></td>
 <td><img src="https://raw.githubusercontent.com/gohugoio/hugoDocs/master/static/img/hugo-logo.png" height="120"/></td>

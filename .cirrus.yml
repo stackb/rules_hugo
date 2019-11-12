@@ -1,0 +1,10 @@
+---
+build_task:
+  container:
+    image: l.gcr.io/google/bazel:1.1.0
+  build_and_test_script: bazel test
+    --spawn_strategy=sandboxed
+    --strategy=Javac=sandboxed
+    --genrule_strategy=sandboxed
+    --remote_http_cache=http://$CIRRUS_HTTP_CACHE_HOST
+    //site:site_test
