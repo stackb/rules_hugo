@@ -53,7 +53,8 @@ def _hugo_site_impl(ctx):
     layout_files = copy_to_dir(ctx, ctx.files.layouts, "layouts")
     data_files = copy_to_dir(ctx, ctx.files.data, "data")
     asset_files = copy_to_dir(ctx, ctx.files.assets, "assets")
-    hugo_inputs += content_files + static_files + image_files + layout_files + asset_files + data_files
+    i18n_files = copy_to_dir(ctx, ctx.files.assets, "i18n")
+    hugo_inputs += content_files + static_files + image_files + layout_files + asset_files + data_files + i18n_files
 
     # Copy the theme
     if ctx.attr.theme:
@@ -143,6 +144,10 @@ hugo_site = rule(
         "data": attr.label_list(
             allow_files = True,
         ),
+        # Files to be included in the i18n/ subdir
+        "i18n": attr.label_list(
+            allow_files = True,
+        ),        
         # The hugo executable
         "hugo": attr.label(
             default = "@hugo//:hugo",
