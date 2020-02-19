@@ -21,14 +21,17 @@ def relative_path(src, dirname):
 def copy_to_dir(ctx, srcs, dirname):
     outs = []
     for i in srcs:
-        o = ctx.actions.declare_file(relative_path(i, dirname))
-        ctx.actions.run_shell(
-            inputs = [i],
-            outputs = [o],
-            command = 'cp -r "$1" "$2"',
-            arguments = [i.path, o.path],
-        )
-        outs.append(o)
+        if i.is_source:
+            o = ctx.actions.declare_file(relative_path(i, dirname))
+            ctx.actions.run(
+                inputs = [i],
+                executable = "cp",
+                arguments = ["-r", i.path, o.path],
+                outputs = [o],
+            )
+            outs.append(o)
+        else:
+            outs.append(i)
     return outs
 
 def _hugo_site_impl(ctx):
@@ -49,15 +52,17 @@ def _hugo_site_impl(ctx):
     hugo_inputs.append(config_file)
 
     # Copy all the files over
-    archetypes_files = copy_to_dir(ctx, ctx.files.archetypes, "archetypes")
-    content_files = copy_to_dir(ctx, ctx.files.content, "content")
-    static_files = copy_to_dir(ctx, ctx.files.static, "static")
-    image_files = copy_to_dir(ctx, ctx.files.images, "images")
-    layout_files = copy_to_dir(ctx, ctx.files.layouts, "layouts")
-    data_files = copy_to_dir(ctx, ctx.files.data, "data")
-    asset_files = copy_to_dir(ctx, ctx.files.assets, "assets")
-    i18n_files = copy_to_dir(ctx, ctx.files.assets, "i18n")
-    hugo_inputs += archetypes_files + content_files + static_files + image_files + layout_files + asset_files + data_files + i18n_files
+    for name, srcs in {
+        "archetypes": ctx.files.archetypes,
+        "assets": ctx.files.assets,
+        "content": ctx.files.content,
+        "data": ctx.files.data,
+        "i18n": ctx.files.i18n,
+        "images": ctx.files.images,
+        "layouts": ctx.files.layouts,
+        "static": ctx.files.static,
+    }.items():
+        hugo_inputs += copy_to_dir(ctx, srcs, name)
 
     # Copy the theme
     if ctx.attr.theme:
