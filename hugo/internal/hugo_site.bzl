@@ -47,6 +47,7 @@ def _hugo_site_impl(ctx):
     hugo_inputs.append(config_file)
 
     # Copy all the files over
+    archetypes_files = copy_to_dir(ctx, ctx.files.archetypes, "archetypes")
     content_files = copy_to_dir(ctx, ctx.files.content, "content")
     static_files = copy_to_dir(ctx, ctx.files.static, "static")
     image_files = copy_to_dir(ctx, ctx.files.images, "images")
@@ -54,7 +55,7 @@ def _hugo_site_impl(ctx):
     data_files = copy_to_dir(ctx, ctx.files.data, "data")
     asset_files = copy_to_dir(ctx, ctx.files.assets, "assets")
     i18n_files = copy_to_dir(ctx, ctx.files.assets, "i18n")
-    hugo_inputs += content_files + static_files + image_files + layout_files + asset_files + data_files + i18n_files
+    hugo_inputs += archetypes_files + content_files + static_files + image_files + layout_files + asset_files + data_files + i18n_files
 
     # Copy the theme
     if ctx.attr.theme:
@@ -97,6 +98,9 @@ def _hugo_site_impl(ctx):
         inputs = hugo_inputs,
         outputs = hugo_outputs,
         tools = [hugo],
+        execution_requirements = {
+            "no-sandbox": "1",
+        }, 
     )
 
     files = depset([hugo_outputdir])
@@ -124,6 +128,11 @@ hugo_site = rule(
             allow_files = True,
             mandatory = True,
         ),
+        # Files to be included in the archetypes/ subdir
+        "archetypes": attr.label_list(
+            allow_files = True,
+        ),
+        # Files to be included in the images/ subdir
         # Files to be included in the static/ subdir
         "static": attr.label_list(
             allow_files = True,
