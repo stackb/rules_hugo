@@ -106,7 +106,7 @@ def _hugo_site_impl(ctx):
     )
 
     files = depset([hugo_outputdir])
-    runfiles = ctx.runfiles(files = [hugo_outputdir])
+    runfiles = ctx.runfiles(files = [hugo_outputdir] + hugo_inputs)
 
     return [DefaultInfo(
         files = files,
@@ -186,26 +186,49 @@ hugo_site = rule(
 def _hugo_serve_impl(ctx):
     """ This is a long running process used for development"""
     hugo = ctx.executable.hugo
-    hugo_args = ["serve"]
+    hugo_outfile = ctx.actions.declare_file("{}.out".format(ctx.label.name))
+    hugo_outputs = [hugo_outfile]
+    hugo_args = []
 
     if ctx.attr.quiet:
         hugo_args.append("--quiet")
-    if ctx.attr.verbose:
+    if ctx.attr.quiet:
         hugo_args.append("--verbose")
-    if ctx.attr.disableFastRender:
+    if ctx.attr.quiet:
         hugo_args.append("--disableFastRender")
 
-    ctx.actions.run(
-        mnemonic="GoHugo",
-        progress_message="Serve hugo site",
-        executable=hugo,
-        arguments=hugo_args,
-        tools=[hugo],
+    executable_path = "./" + ctx.attr.hugo.files_to_run.executable.short_path
+
+    runfiles = ctx.runfiles()
+    runfiles = runfiles.merge(ctx.runfiles(files=[ctx.attr.hugo.files_to_run.executable]))
+
+    for dep in ctx.attr.dep:
+        runfiles = runfiles.merge(dep.default_runfiles).merge(dep.data_runfiles).merge(ctx.runfiles(files=dep.files.to_list()))
+
+    script_template_prefix = """#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+"""
+    script_template = """{hugo_bin} serve -s $DIR {args}"""
+    script = ctx.actions.declare_file("{}-serve".format(ctx.label.name))
+    script_content = script_template_prefix + script_template.format(
+        hugo_bin=executable_path,
+        args=" ".join(hugo_args),
+    )
+    ctx.actions.write(output=script, content=script_content, is_executable=True)
+
+    ctx.actions.run_shell(
+        mnemonic = "GoHugoServe",
+        tools = [script, hugo],
+        command = script.path,
+        outputs = hugo_outputs,
+        # arguments = [],
         execution_requirements={
             "no-sandbox": "1",
         },
     )
-    return None
+
+    return [DefaultInfo(executable=script, runfiles=runfiles)]
+
 
 hugo_serve = rule(
     attrs = {
@@ -216,9 +239,9 @@ hugo_serve = rule(
             executable = True,
             cfg = "host",
         ),
-        #"src": attr.label_list(
-        #    mandatory = True,
-        #),
+        "dep": attr.label_list(
+            mandatory=True,
+        ),
         # Disable fast render
         "disableFastRender": attr.bool(
             default = False,
@@ -233,4 +256,5 @@ hugo_serve = rule(
         ),
     },
     implementation = _hugo_serve_impl,
+    executable = True,
 )
