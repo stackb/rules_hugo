@@ -13,6 +13,8 @@ def relative_path(src, dirname):
     # substring.
     i = src.short_path.rfind("/%s/" % dirname)
     if i == -1:
+        i = src.short_path.rfind("%s/" % dirname)
+    if i == -1:
         fail("failed to get relative path: couldn't find %s in %s" % (dirname, src.short_path))
     return src.short_path[i + 1:]
 
@@ -23,7 +25,7 @@ def copy_to_dir(ctx, srcs, dirname):
         ctx.actions.run_shell(
             inputs = [i],
             outputs = [o],
-            command = 'cp "$1" "$2"',
+            command = 'cp -r "$1" "$2"',
             arguments = [i.path, o.path],
         )
         outs.append(o)
@@ -70,7 +72,7 @@ def _hugo_site_impl(ctx):
             ctx.actions.run_shell(
                 inputs = [i],
                 outputs = [o],
-                command = 'cp "$1" "$2"',
+                command = 'cp -r "$1" "$2"',
                 arguments = [i.path, o.path],
             )
             hugo_inputs.append(o)
@@ -104,7 +106,7 @@ def _hugo_site_impl(ctx):
     )
 
     files = depset([hugo_outputdir])
-    runfiles = ctx.runfiles(files = [hugo_outputdir])
+    runfiles = ctx.runfiles(files = [hugo_outputdir] + hugo_inputs)
 
     return [DefaultInfo(
         files = files,
@@ -179,4 +181,79 @@ hugo_site = rule(
         ),
     },
     implementation = _hugo_site_impl,
+)
+
+def _hugo_serve_impl(ctx):
+    """ This is a long running process used for development"""
+    hugo = ctx.executable.hugo
+    hugo_outfile = ctx.actions.declare_file("{}.out".format(ctx.label.name))
+    hugo_outputs = [hugo_outfile]
+    hugo_args = []
+
+    if ctx.attr.quiet:
+        hugo_args.append("--quiet")
+    if ctx.attr.quiet:
+        hugo_args.append("--verbose")
+    if ctx.attr.quiet:
+        hugo_args.append("--disableFastRender")
+
+    executable_path = "./" + ctx.attr.hugo.files_to_run.executable.short_path
+
+    runfiles = ctx.runfiles()
+    runfiles = runfiles.merge(ctx.runfiles(files=[ctx.attr.hugo.files_to_run.executable]))
+
+    for dep in ctx.attr.dep:
+        runfiles = runfiles.merge(dep.default_runfiles).merge(dep.data_runfiles).merge(ctx.runfiles(files=dep.files.to_list()))
+
+    script_template_prefix = """#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+"""
+    script_template = """{hugo_bin} serve -s $DIR {args}"""
+    script = ctx.actions.declare_file("{}-serve".format(ctx.label.name))
+    script_content = script_template_prefix + script_template.format(
+        hugo_bin=executable_path,
+        args=" ".join(hugo_args),
+    )
+    ctx.actions.write(output=script, content=script_content, is_executable=True)
+
+    ctx.actions.run_shell(
+        mnemonic = "GoHugoServe",
+        tools = [script, hugo],
+        command = script.path,
+        outputs = hugo_outputs,
+        execution_requirements={
+            "no-sandbox": "1",
+        },
+    )
+
+    return [DefaultInfo(executable=script, runfiles=runfiles)]
+
+
+hugo_serve = rule(
+    attrs = {
+        # The hugo executable
+        "hugo": attr.label(
+            default = "@hugo//:hugo",
+            allow_files = True,
+            executable = True,
+            cfg = "host",
+        ),
+        "dep": attr.label_list(
+            mandatory=True,
+        ),
+        # Disable fast render
+        "disableFastRender": attr.bool(
+            default = False,
+        ),
+        # Emit quietly
+        "quiet": attr.bool(
+            default = True,
+        ),
+        # Emit verbose
+        "verbose": attr.bool(
+            default = False,
+        ),
+    },
+    implementation = _hugo_serve_impl,
+    executable = True,
 )
