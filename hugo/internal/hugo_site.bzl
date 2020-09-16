@@ -13,6 +13,8 @@ def relative_path(src, dirname):
     # substring.
     i = src.short_path.rfind("/%s/" % dirname)
     if i == -1:
+        i = src.short_path.rfind("%s/" % dirname)
+    if i == -1:
         fail("failed to get relative path: couldn't find %s in %s" % (dirname, src.short_path))
     return src.short_path[i + 1:]
 
@@ -23,7 +25,7 @@ def copy_to_dir(ctx, srcs, dirname):
         ctx.actions.run_shell(
             inputs = [i],
             outputs = [o],
-            command = 'cp "$1" "$2"',
+            command = 'cp -r "$1" "$2"',
             arguments = [i.path, o.path],
         )
         outs.append(o)
@@ -70,7 +72,7 @@ def _hugo_site_impl(ctx):
             ctx.actions.run_shell(
                 inputs = [i],
                 outputs = [o],
-                command = 'cp "$1" "$2"',
+                command = 'cp -r "$1" "$2"',
                 arguments = [i.path, o.path],
             )
             hugo_inputs.append(o)
@@ -179,4 +181,56 @@ hugo_site = rule(
         ),
     },
     implementation = _hugo_site_impl,
+)
+
+def _hugo_serve_impl(ctx):
+    """ This is a long running process used for development"""
+    hugo = ctx.executable.hugo
+    hugo_args = ["serve"]
+
+    if ctx.attr.quiet:
+        hugo_args.append("--quiet")
+    if ctx.attr.verbose:
+        hugo_args.append("--verbose")
+    if ctx.attr.disableFastRender:
+        hugo_args.append("--disableFastRender")
+
+    ctx.actions.run(
+        mnemonic="GoHugo",
+        progress_message="Serve hugo site",
+        executable=hugo,
+        arguments=hugo_args,
+        tools=[hugo],
+        execution_requirements={
+            "no-sandbox": "1",
+        },
+    )
+    return None
+
+hugo_serve = rule(
+    attrs = {
+        # The hugo executable
+        "hugo": attr.label(
+            default = "@hugo//:hugo",
+            allow_files = True,
+            executable = True,
+            cfg = "host",
+        ),
+        #"src": attr.label_list(
+        #    mandatory = True,
+        #),
+        # Disable fast render
+        "disableFastRender": attr.bool(
+            default = False,
+        ),
+        # Emit quietly
+        "quiet": attr.bool(
+            default = True,
+        ),
+        # Emit verbose
+        "verbose": attr.bool(
+            default = False,
+        ),
+    },
+    implementation = _hugo_serve_impl,
 )
