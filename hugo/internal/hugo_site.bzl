@@ -221,7 +221,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
         tools = [script, hugo],
         command = script.path,
         outputs = hugo_outputs,
-        # arguments = [],
         execution_requirements={
             "no-sandbox": "1",
         },
