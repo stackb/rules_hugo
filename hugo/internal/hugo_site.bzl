@@ -183,6 +183,17 @@ hugo_site = rule(
     implementation = _hugo_site_impl,
 )
 
+_SERVE_SCRIPT_PREFIX = """#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+trap exit_gracefully SIGINT
+function exit_gracefully() {
+    exit 0;
+}
+
+"""
+_SERVE_SCRIPT_TEMPLATE = """{hugo_bin} serve -s $DIR {args}"""
+
 def _hugo_serve_impl(ctx):
     """ This is a long running process used for development"""
     hugo = ctx.executable.hugo
@@ -205,12 +216,9 @@ def _hugo_serve_impl(ctx):
     for dep in ctx.attr.dep:
         runfiles = runfiles.merge(dep.default_runfiles).merge(dep.data_runfiles).merge(ctx.runfiles(files=dep.files.to_list()))
 
-    script_template_prefix = """#!/bin/bash
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-"""
-    script_template = """{hugo_bin} serve -s $DIR {args}"""
+
     script = ctx.actions.declare_file("{}-serve".format(ctx.label.name))
-    script_content = script_template_prefix + script_template.format(
+    script_content = _SERVE_SCRIPT_PREFIX + _SERVE_SCRIPT_TEMPLATE.format(
         hugo_bin=executable_path,
         args=" ".join(hugo_args),
     )
