@@ -68,7 +68,7 @@ github_hugo_theme(
 ### Declare a hugo_site in your BUILD file
 
 ```python
-load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_site", "hugo_theme")
+load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_site", "hugo_theme", "hugo_serve")
 
 # Declare a theme 'xmin'.  In this case the `name` and
 # `theme_name` are identical, so the `theme_name` could be omitted in this case.
@@ -92,6 +92,12 @@ hugo_site(
     ],
     quiet = False,
     theme = ":xmin",
+)
+
+# Run local development server
+hugo_serve(
+    name = "local_%s" % my_site_name,
+    dep = [":%s" % my_site_name],
 )
 
 # Tar it up
