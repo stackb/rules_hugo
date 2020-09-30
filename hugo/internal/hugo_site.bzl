@@ -72,7 +72,6 @@ def _hugo_site_impl(ctx):
                 o_filename = "/".join(["themes", theme.name, i.short_path[len(theme.path):]])
             o = ctx.actions.declare_file(o_filename)
             ctx.actions.run_shell(
-                progress_message = "theme path = {}".format(theme.path),
                 inputs = [i],
                 outputs = [o],
                 command = 'cp "$1" "$2"',
