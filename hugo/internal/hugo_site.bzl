@@ -62,12 +62,17 @@ def _hugo_site_impl(ctx):
         theme = ctx.attr.theme.hugo_theme
         hugo_args += ["--theme", theme.name]
         for i in theme.files.to_list():
+            path_list = i.short_path.split("/")
             if i.short_path.startswith("../"):
-                o_filename = "/".join(["themes", theme.name] + i.short_path.split("/")[2:])
+                o_filename = "/".join(["themes", theme.name] + path_list[2:])
+            elif "themes" in path_list: # check if an element in the path has the name 'themes'
+                indx = path_list.index("themes")
+                o_filename = "/".join(["themes", theme.name] + path_list[indx+2:])
             else:
                 o_filename = "/".join(["themes", theme.name, i.short_path[len(theme.path):]])
             o = ctx.actions.declare_file(o_filename)
             ctx.actions.run_shell(
+                progress_message = "theme path = {}".format(theme.path),
                 inputs = [i],
                 outputs = [o],
                 command = 'cp "$1" "$2"',
