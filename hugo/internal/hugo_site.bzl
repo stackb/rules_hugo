@@ -65,7 +65,7 @@ def _hugo_site_impl(ctx):
             path_list = i.short_path.split("/")
             if i.short_path.startswith("../"):
                 o_filename = "/".join(["themes", theme.name] + path_list[2:])
-            elif "themes" in path_list: # check if an element in the path has the name 'themes'
+            elif i.short_path[len(theme.path):].startswith("/themes"): # check if themes is the first dir after theme path
                 indx = path_list.index("themes")
                 o_filename = "/".join(["themes", theme.name] + path_list[indx+2:])
             else:
