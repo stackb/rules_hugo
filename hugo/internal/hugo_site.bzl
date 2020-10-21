@@ -11,12 +11,16 @@ def relative_path(src, dirname):
 
     # Find the last path segment that matches the given dirname, and return that
     # substring.
-    i = src.short_path.rfind("/%s/" % dirname)
-    if i == -1:
-        i = src.short_path.rfind("%s/" % dirname)
+    if src.short_path.startswith("/"):
+        i = src.short_path.rfind("/%s/" % dirname)
+        if i == -1:
+            fail("failed to get relative path: couldn't find %s in %s" % (dirname, src.short_path))
+        return src.short_path[i + 1:]
+
+    i = src.short_path.rfind("%s/" % dirname)
     if i == -1:
         fail("failed to get relative path: couldn't find %s in %s" % (dirname, src.short_path))
-    return src.short_path[i + 1:]
+    return src.short_path[i:]
 
 def copy_to_dir(ctx, srcs, dirname):
     outs = []
