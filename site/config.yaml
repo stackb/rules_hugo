@@ -3,7 +3,7 @@
 # baseURL: https://rules_hugo.github.com/
 baseURL: /
 title: stackb/rules_hugo
-theme: hugo-book
+theme: book
 disableKinds: ['taxonomy', 'taxonomyTerm']
 # themesDir: ../..
 
