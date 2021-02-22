@@ -104,6 +104,8 @@ def _hugo_site_impl(ctx):
         hugo_args.append("--verbose")
     if ctx.attr.base_url:
         hugo_args += ["--baseURL", ctx.attr.base_url]
+    if ctx.attr.build_drafts:
+        hugo_args += ["--buildDrafts"]
 
     ctx.actions.run(
         mnemonic = "GoHugo",
@@ -190,6 +192,10 @@ hugo_site = rule(
         ),
         # Emit verbose
         "verbose": attr.bool(
+            default = False,
+        ),
+        # Build content marked as draft
+        "build_drafts": attr.bool(
             default = False,
         ),
     },
