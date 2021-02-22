@@ -147,7 +147,6 @@ hugo_site = rule(
         "archetypes": attr.label_list(
             allow_files = True,
         ),
-        # Files to be included in the images/ subdir
         # Files to be included in the static/ subdir
         "static": attr.label_list(
             allow_files = True,
