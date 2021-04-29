@@ -8,12 +8,23 @@ filegroup(
 )
 """
 
-def github_hugo_theme(name, owner, repo, commit, **kwargs):
-    url = "https://github.com/{owner}/{repo}/archive/{commit}.zip".format(
-        owner = owner,
-        repo = repo,
-        commit = commit,
-    )
+DEFAULT_GITHUB_HOST = "github.com"
+
+def github_hugo_theme(name, owner, repo, commit, github_host=None, **kwargs):
+    if github_host:
+        url = "https://{github_host}/{owner}/{repo}/archive/{commit}.zip".format(
+            owner = owner,
+            repo = repo,
+            commit = commit,
+            github_host = github_host,
+        )
+    else:
+        url = "https://{github_host}/{owner}/{repo}/archive/{commit}.zip".format(
+            owner = owner,
+            repo = repo,
+            commit = commit,
+            github_host = DEFAULT_GITHUB_HOST,
+        )
     strip_prefix = "{repo}-{commit}".format(
         repo = repo,
         commit = commit,
