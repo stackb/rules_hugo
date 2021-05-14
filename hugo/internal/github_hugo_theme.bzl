@@ -8,11 +8,15 @@ filegroup(
 )
 """
 
-def github_hugo_theme(name, owner, repo, commit, **kwargs):
-    url = "https://github.com/{owner}/{repo}/archive/{commit}.zip".format(
+DEFAULT_GITHUB_HOST = "github.com"
+
+def github_hugo_theme(name, owner, repo, commit, github_host=DEFAULT_GITHUB_HOST, **kwargs):
+
+    url = "https://{github_host}/{owner}/{repo}/archive/{commit}.zip".format(
         owner = owner,
         repo = repo,
         commit = commit,
+        github_host = github_host,
     )
     strip_prefix = "{repo}-{commit}".format(
         repo = repo,
