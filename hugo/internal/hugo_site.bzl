@@ -48,17 +48,17 @@ def _hugo_site_impl(ctx):
     # Copy the config file into place
     # Unless a config dir is specified
 
-    config_file = ctx.actions.declare_file(ctx.file.config.basename)
+    
 
     if ctx.files.configDir != None and len(ctx.files.configDir) == 0:
+        config_file = ctx.actions.declare_file(ctx.file.config.basename)
         ctx.actions.run_shell(
             inputs = [ctx.file.config],
             outputs = [config_file],
             command = 'cp -L "$1" "$2"',
             arguments = [ctx.file.config.path, config_file.path],
         )
-        
-    hugo_inputs.append(config_file)
+        hugo_inputs.append(config_file)
 
     # Copy all the files over
     for name, srcs in {
