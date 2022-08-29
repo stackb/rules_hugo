@@ -50,14 +50,14 @@ def _hugo_site_impl(ctx):
 
     config_file = ctx.actions.declare_file(ctx.file.config.basename)
 
-    if ctx.files.configDir != None and len(ctx.files.configDir) == 0:
-        ctx.actions.run_shell(
-            inputs = [ctx.file.config],
-            outputs = [config_file],
-            command = 'cp -L "$1" "$2"',
-            arguments = [ctx.file.config.path, config_file.path],
-        )
-        hugo_inputs.append(config_file)
+    ctx.actions.run_shell(
+        inputs = [ctx.file.config],
+        outputs = [config_file],
+        command = 'cp -L "$1" "$2"',
+        arguments = [ctx.file.config.path, config_file.path],
+    )
+
+    hugo_inputs.append(config_file)
 
     # Copy all the files over
     for name, srcs in {
@@ -69,7 +69,7 @@ def _hugo_site_impl(ctx):
         "images": ctx.files.images,
         "layouts": ctx.files.layouts,
         "static": ctx.files.static,
-        "config": ctx.files.configDir,
+        "config": ctx.files.config_dir,
     }.items():
         hugo_inputs += copy_to_dir(ctx, srcs, name)
 
@@ -143,10 +143,9 @@ hugo_site = rule(
                 ".yml",
                 ".json",
             ],
-            mandatory = True,
         ),
         # For use of config directories
-        "configDir": attr.label_list(
+        "config_dir": attr.label_list(
             allow_files = True,
         ),
         # Files to be included in the content/ subdir
