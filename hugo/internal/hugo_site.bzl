@@ -59,10 +59,14 @@ def _hugo_site_impl(ctx):
         )
 
         hugo_inputs.append(config_file)
-        
+
         hugo_args += [
             "--source",
             config_file.dirname,
+        ]
+    else:
+        hugo_args += [
+            "--source", hugo_outputdir.dirname,
         ]
 
     # Copy all the files over
