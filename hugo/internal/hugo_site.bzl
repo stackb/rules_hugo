@@ -48,7 +48,7 @@ def _hugo_site_impl(ctx):
     # Copy the config file into place
     # Unless a config dir is specified
 
-    if ctx.file.configDir.basename == "":
+    if len(ctx.files.configDir) == 0:
         config_file = ctx.actions.declare_file(ctx.file.config.basename)
         ctx.actions.run_shell(
             inputs = [ctx.file.config],
