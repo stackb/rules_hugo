@@ -67,7 +67,7 @@ def _hugo_site_impl(ctx):
     else:
         hugo_args += [
             "--source", hugo_outputdir.dirname,
-            "--configDir", ctx.files.config_dir.path,
+            "--configDir", ctx.files.config_dir[0].path,
         ]
 
     # Copy all the files over
