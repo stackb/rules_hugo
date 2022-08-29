@@ -46,13 +46,16 @@ def _hugo_site_impl(ctx):
     hugo_args = []
 
     # Copy the config file into place
-    config_file = ctx.actions.declare_file(ctx.file.config.basename)
-    ctx.actions.run_shell(
-        inputs = [ctx.file.config],
-        outputs = [config_file],
-        command = 'cp -L "$1" "$2"',
-        arguments = [ctx.file.config.path, config_file.path],
-    )
+    # Unless a config dir is specified
+
+    if ctx.file.configDir.basename == "":
+        config_file = ctx.actions.declare_file(ctx.file.config.basename)
+        ctx.actions.run_shell(
+            inputs = [ctx.file.config],
+            outputs = [config_file],
+            command = 'cp -L "$1" "$2"',
+            arguments = [ctx.file.config.path, config_file.path],
+        )
     hugo_inputs.append(config_file)
 
     # Copy all the files over
