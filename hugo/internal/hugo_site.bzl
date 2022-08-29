@@ -67,6 +67,7 @@ def _hugo_site_impl(ctx):
     else:
         hugo_args += [
             "--source", hugo_outputdir.dirname,
+            "--configDir", ctx.files.config_dir.path,
         ]
 
     # Copy all the files over
@@ -151,7 +152,6 @@ hugo_site = rule(
                 ".yml",
                 ".json",
             ],
-            mandatory = True,
         ),
         # For use of config directories
         "config_dir": attr.label_list(
