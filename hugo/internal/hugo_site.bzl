@@ -65,6 +65,7 @@ def _hugo_site_impl(ctx):
         "images": ctx.files.images,
         "layouts": ctx.files.layouts,
         "static": ctx.files.static,
+        "config": ctx.files.configDir,
     }.items():
         hugo_inputs += copy_to_dir(ctx, srcs, name)
 
@@ -139,6 +140,10 @@ hugo_site = rule(
                 ".json",
             ],
             mandatory = True,
+        ),
+        # For use of config directories
+        "configDir": attr.label_list(
+            allow_files = True,
         ),
         # Files to be included in the content/ subdir
         "content": attr.label_list(
