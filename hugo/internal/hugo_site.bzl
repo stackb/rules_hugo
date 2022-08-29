@@ -46,18 +46,24 @@ def _hugo_site_impl(ctx):
     hugo_args = []
 
     # Copy the config file into place
-    # Unless a config dir is specified
+    config_dir = ctx.files.config_dir
 
-    config_file = ctx.actions.declare_file(ctx.file.config.basename)
+    if config_dir == None or len(config_dir) == 0:
+        config_file = ctx.actions.declare_file(ctx.file.config.basename)
 
-    ctx.actions.run_shell(
-        inputs = [ctx.file.config],
-        outputs = [config_file],
-        command = 'cp -L "$1" "$2"',
-        arguments = [ctx.file.config.path, config_file.path],
-    )
+        ctx.actions.run_shell(
+            inputs = [ctx.file.config],
+            outputs = [config_file],
+            command = 'cp -L "$1" "$2"',
+            arguments = [ctx.file.config.path, config_file.path],
+        )
 
-    hugo_inputs.append(config_file)
+        hugo_inputs.append(config_file)
+        
+        hugo_args += [
+            "--source",
+            config_file.dirname,
+        ]
 
     # Copy all the files over
     for name, srcs in {
@@ -97,8 +103,6 @@ def _hugo_site_impl(ctx):
 
     # Prepare hugo command
     hugo_args += [
-        "--source",
-        config_file.dirname,
         "--destination",
         ctx.label.name,
     ]
@@ -143,6 +147,7 @@ hugo_site = rule(
                 ".yml",
                 ".json",
             ],
+            mandatory = True,
         ),
         # For use of config directories
         "config_dir": attr.label_list(
