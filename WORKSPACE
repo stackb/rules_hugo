@@ -24,7 +24,7 @@ http_archive(
     sha256 = "7fdd57f7d4450325a778629021c0fff5531dc8475de6c4ec70ab07e9484d400e",
     build_file_content="""
 filegroup(
-    name = "srcs",
+    name = "files",
     srcs = glob(["**"]),
     visibility = ["//visibility:public"]
 )

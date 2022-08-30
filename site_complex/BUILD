@@ -18,7 +18,7 @@ hugo_theme(
     name = "hugo_theme_geekdoc",
     theme_name = "hugo-geekdoc",
     srcs = [
-        "@com_github_thegeeklab_hugo_geekdoc//:srcs",
+        "@com_github_thegeeklab_hugo_geekdoc//:files",
     ],
 )
 

@@ -1,8 +1,5 @@
 ---
 title: "Testing complex sites"
-geekdocNav: false
-geekdocAlign: center
-geekdocAnchor: false
 ---
 
 ## Introduction
