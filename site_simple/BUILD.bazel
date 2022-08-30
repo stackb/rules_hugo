@@ -1,0 +1,28 @@
+load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_site", "hugo_theme", "hugo_serve")
+
+hugo_theme(
+    name = "book",
+    srcs = [
+        "@com_github_alex_shpak_hugo_book//:files",
+    ],
+)
+
+hugo_site(
+    name = "site_simple",
+    config = "config.yaml",
+    content = glob(["content/**"]),
+    static = glob(["static/**"]),
+    layouts = glob(["layouts/**"]),
+    theme = ":book",
+)
+
+hugo_serve(
+    name = "site_serve",
+    dep = [":site_simple"],
+)
+
+sh_test(
+    name = "site_test",
+    srcs = ["site_test.sh"],
+    data = [":site_simple"],
+)
