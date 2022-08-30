@@ -50,7 +50,7 @@ def _hugo_site_impl(ctx):
 
     if config_dir == None or len(config_dir) == 0:
         config_file = ctx.actions.declare_file(ctx.file.config.basename)
-
+        
         ctx.actions.run_shell(
             inputs = [ctx.file.config],
             outputs = [config_file],
@@ -65,9 +65,12 @@ def _hugo_site_impl(ctx):
             config_file.dirname,
         ]
     else:
+        placeholder_file = ctx.actions.declare_file(".placeholder")
+        ctx.actions.write(placeholder_file, "paceholder", is_executable=False)
+        hugo_inputs.append(placeholder_file)
+        #  placeholder_file.dirname + "/config/_default/config.yaml",
         hugo_args += [
-            "--source", hugo_outputdir.dirname,
-            "--configDir", ctx.files.config_dir[0].path,
+            "--source", placeholder_file.dirname
         ]
 
     # Copy all the files over
