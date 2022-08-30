@@ -45,6 +45,9 @@ def _hugo_site_impl(ctx):
     hugo_outputs = [hugo_outputdir]
     hugo_args = []
 
+    if ctx.file.config == None and (ctx.files.config_dir == None or len(ctx.files.config_dir) == 0):
+        fail("You must provide either a config file or a config_dir")
+
     # Copy the config file into place
     config_dir = ctx.files.config_dir
 
