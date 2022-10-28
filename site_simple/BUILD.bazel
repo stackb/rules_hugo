@@ -8,7 +8,7 @@ hugo_theme(
 )
 
 hugo_site(
-    name = "site",
+    name = "site_simple",
     config = "config.yaml",
     content = glob(["content/**"]),
     static = glob(["static/**"]),
@@ -18,11 +18,11 @@ hugo_site(
 
 hugo_serve(
     name = "site_serve",
-    dep = [":site"],
+    dep = [":site_simple"],
 )
 
 sh_test(
     name = "site_test",
     srcs = ["site_test.sh"],
-    data = [":site"],
+    data = [":site_simple"],
 )

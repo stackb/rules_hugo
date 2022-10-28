@@ -63,9 +63,27 @@ github_hugo_theme(
     repo = "hugo-xmin",
     commit = "c14ca049d0dd60386264ea68c91d8495809cc4c6",
 )
+
+#
+# This creates a filegroup target from a released archive from GitHub
+# this is useful when a theme uses compiled / aggregated sources NOT found
+# in a source root.
+#
+http_archive(
+    name = "com_github_thegeeklab_hugo_geekdoc",
+    url = "https://github.com/thegeeklab/hugo-geekdoc/releases/download/v0.34.2/hugo-geekdoc.tar.gz",
+    sha256 = "7fdd57f7d4450325a778629021c0fff5531dc8475de6c4ec70ab07e9484d400e",
+    build_file_content="""
+filegroup(
+    name = "files",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"]
+)
+    """
+)
 ```
 
-### Declare a hugo_site in your BUILD file
+### Declare a hugo_site with a GitHub repository theme in your BUILD file
 
 ```python
 load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_site", "hugo_theme", "hugo_serve")
@@ -106,6 +124,46 @@ pkg_tar(
     srcs = [":%s" % my_site_name],
 )
 ```
+
+### Declare a hugo_site with a GitHub released archive theme in your BUILD file
+```python
+load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_site", "hugo_theme", "hugo_serve")
+
+hugo_theme(
+    name = "hugo_theme_geekdoc",
+    theme_name = "hugo-geekdoc",
+    srcs = [
+        "@com_github_thegeeklab_hugo_geekdoc//:files",
+    ],
+)
+
+# Note, here we are using the config_dir attribute to support multi-lingual configurations.
+hugo_site(
+    name = "site_complex",
+    config_dir = glob(["config/**"]),
+    content = glob(["content/**"]),
+    data = glob(["data/**"]),
+    quiet = False,
+    theme = ":hugo_theme_geekdoc",
+)
+
+# Run local development server
+hugo_serve(
+    name = "serve",
+    dep = [":site_complex"],
+)
+```
+
+### Previewing the site
+
+Execute the following command:
+
+```shell
+bazel run //site_complex:serve
+```
+
+Then open your browser: [here](http://localhost:1313)
+
 
 ### Build the site
 

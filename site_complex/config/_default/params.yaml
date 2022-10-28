@@ -11,4 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+---
+description: >
+  This is a more complex example, using multi-language configuration for open source docs.
+images:
+  - "socialmedia2.png"
 
+geekdocToC: 3
+geekdocTagsToMenu: true
+
+#geekdocRepo: https://github.com/thegeeklab/hugo-geekdoc
+#geekdocEditPath: edit/main/exampleSite
+
+geekdocSearch: true
+geekdocSearchShowParent: true
+
+#geekdocLegalNotice: https://thegeeklab.de/legal-notice/#contact-information
+#geekdocPrivacyPolicy: https://thegeeklab.de/legal-notice/#privacy-policy
+
+geekdocImageLazyLoading: true
+geekdocDarkModeDim: true

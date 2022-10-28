@@ -30,7 +30,7 @@ def copy_to_dir(ctx, srcs, dirname):
             ctx.actions.run(
                 inputs = [i],
                 executable = "cp",
-                arguments = ["-r", i.path, o.path],
+                arguments = ["-r", "-L", i.path, o.path],
                 outputs = [o],
             )
             outs.append(o)
@@ -45,15 +45,36 @@ def _hugo_site_impl(ctx):
     hugo_outputs = [hugo_outputdir]
     hugo_args = []
 
+    if ctx.file.config == None and (ctx.files.config_dir == None or len(ctx.files.config_dir) == 0):
+        fail("You must provide either a config file or a config_dir")
+
     # Copy the config file into place
-    config_file = ctx.actions.declare_file(ctx.file.config.basename)
-    ctx.actions.run_shell(
-        inputs = [ctx.file.config],
-        outputs = [config_file],
-        command = 'cp "$1" "$2"',
-        arguments = [ctx.file.config.path, config_file.path],
-    )
-    hugo_inputs.append(config_file)
+    config_dir = ctx.files.config_dir
+
+    if config_dir == None or len(config_dir) == 0:
+        config_file = ctx.actions.declare_file(ctx.file.config.basename)
+        
+        ctx.actions.run_shell(
+            inputs = [ctx.file.config],
+            outputs = [config_file],
+            command = 'cp -L "$1" "$2"',
+            arguments = [ctx.file.config.path, config_file.path],
+        )
+
+        hugo_inputs.append(config_file)
+
+        hugo_args += [
+            "--source",
+            config_file.dirname,
+        ]
+    else:
+        placeholder_file = ctx.actions.declare_file(".placeholder")
+        ctx.actions.write(placeholder_file, "paceholder", is_executable=False)
+        hugo_inputs.append(placeholder_file)
+        #  placeholder_file.dirname + "/config/_default/config.yaml",
+        hugo_args += [
+            "--source", placeholder_file.dirname
+        ]
 
     # Copy all the files over
     for name, srcs in {
@@ -65,6 +86,7 @@ def _hugo_site_impl(ctx):
         "images": ctx.files.images,
         "layouts": ctx.files.layouts,
         "static": ctx.files.static,
+        "config": ctx.files.config_dir,
     }.items():
         hugo_inputs += copy_to_dir(ctx, srcs, name)
 
@@ -85,15 +107,13 @@ def _hugo_site_impl(ctx):
             ctx.actions.run_shell(
                 inputs = [i],
                 outputs = [o],
-                command = 'cp -r "$1" "$2"',
+                command = 'cp -r -L "$1" "$2"',
                 arguments = [i.path, o.path],
             )
             hugo_inputs.append(o)
 
     # Prepare hugo command
     hugo_args += [
-        "--source",
-        config_file.dirname,
         "--destination",
         ctx.label.name,
     ]
@@ -138,7 +158,10 @@ hugo_site = rule(
                 ".yml",
                 ".json",
             ],
-            mandatory = True,
+        ),
+        # For use of config directories
+        "config_dir": attr.label_list(
+            allow_files = True,
         ),
         # Files to be included in the content/ subdir
         "content": attr.label_list(

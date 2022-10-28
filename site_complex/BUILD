@@ -12,3 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@build_stack_rules_hugo//hugo:rules.bzl", "hugo_site", "hugo_theme", "hugo_serve")
+
+hugo_theme(
+    name = "hugo_theme_geekdoc",
+    theme_name = "hugo-geekdoc",
+    srcs = [
+        "@com_github_thegeeklab_hugo_geekdoc//:files",
+    ],
+)
+
+hugo_site(
+    name = "site_complex",
+    config_dir = glob(["config/**"]),
+    content = glob(["content/**"]),
+    data = glob(["data/**"]),
+    quiet = False,
+    theme = ":hugo_theme_geekdoc",
+    verbose = True,
+)
+
+# Run local development server
+hugo_serve(
+    name = "serve",
+    dep = [":site_complex"],
+)
