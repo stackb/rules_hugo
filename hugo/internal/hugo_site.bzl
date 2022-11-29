@@ -116,6 +116,11 @@ def _hugo_site_impl(ctx):
     hugo_args += [
         "--destination",
         ctx.label.name,
+        # Hugo wants to modify the static input files for its own bookkeeping
+        # but of course Bazel does not want input files to be changed. This breaks
+        # in some sandboxes like RBE
+        "--noTimes",
+        "--noChmod",
     ]
 
     if ctx.attr.quiet:
