@@ -90,9 +90,9 @@ def _hugo_site_impl(ctx):
     }.items():
         hugo_inputs += copy_to_dir(ctx, srcs, name)
 
-    # Copy the theme
-    if ctx.attr.theme:
-        theme = ctx.attr.theme.hugo_theme
+    # Copy the themes
+    for theme in ctx.attr.themes:
+        theme = theme.hugo_theme
         hugo_args += ["--theme", theme.name]
         for i in theme.files.to_list():
             path_list = i.short_path.split("/")
@@ -137,7 +137,7 @@ def _hugo_site_impl(ctx):
         tools = [hugo],
         execution_requirements = {
             "no-sandbox": "1",
-        }, 
+        },
     )
 
     files = depset([hugo_outputdir])
@@ -195,7 +195,7 @@ hugo_site = rule(
         # Files to be included in the i18n/ subdir
         "i18n": attr.label_list(
             allow_files = True,
-        ),        
+        ),
         # The hugo executable
         "hugo": attr.label(
             default = "@hugo//:hugo",
@@ -205,7 +205,7 @@ hugo_site = rule(
         ),
         # Optionally set the base_url as a hugo argument
         "base_url": attr.string(),
-        "theme": attr.label(
+        "themes": attr.label_list(
             providers = ["hugo_theme"],
         ),
         # Emit quietly
